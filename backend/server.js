@@ -13,7 +13,7 @@ const projectRoutes = require('./routes/projectRoutes');
 const rankingRoutes = require('./routes/rankingRoutes');
 const retoRoutes = require('./routes/retoRoutes');
 const actividadRoutes = require('./routes/actividadRoutes');
-// const commentRoutes = require('./routes/commentRoutes'); // Descomenta si tienes esta ruta
+const commentRoutes = require('./routes/commentRoutes');
 
 const app = express();
 
@@ -42,7 +42,7 @@ app.use('/api/projects', projectRoutes);
 app.use('/api/ranking', rankingRoutes);
 app.use('/api/retos', retoRoutes);
 app.use('/api/actividad', actividadRoutes);
-// app.use('/api/comment', commentRoutes); // Descomenta si tienes esta ruta
+app.use('/api/comment', commentRoutes);
 
 // Ruta de salud para pruebas rápidas
 app.get('/api/health', (req, res) => {
