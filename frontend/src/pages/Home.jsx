@@ -51,6 +51,8 @@ const Home = () => {
   const [feed, setFeed] = useState([]);
   const [actividad, setActividad] = useState([]);
   const [mensajes, setMensajes] = useState([]);
+  const [trending, setTrending] = useState([]);
+  const [suggested, setSuggested] = useState([]);
   const [progress, setProgress] = useState(0);
   const [xp, setXP] = useState(0);
   const [proyectosReal, setProyectosReal] = useState(0);
@@ -76,6 +78,8 @@ const Home = () => {
           feed,
           actividad,
           mensajes,
+          trendingData,
+          suggestedData,
         ] = await Promise.all([
           fetchData("/projects"),
           fetchData("/retos"),
@@ -84,6 +88,8 @@ const Home = () => {
           fetchData("/feed"),
           fetchData("/actividad"),
           fetchData("/messages"),
+          fetchData("/trending"),
+          fetchData("/suggested"),
         ]);
         if (cancel) return;
         setProjects(projects);
@@ -93,6 +99,8 @@ const Home = () => {
         setFeed(feed);
         setActividad(actividad);
         setMensajes(mensajes);
+        setTrending(trendingData);
+        setSuggested(suggestedData);
 
         // Estadísticas usuario (puedes personalizar)
         setProyectosReal(projects.length);
@@ -145,7 +153,7 @@ const Home = () => {
   );
 
   // Panel de sugerencias devs
-  const devsSugeridos = ranking.slice(0, 4);
+  const devsSugeridos = suggested.slice(0, 4);
 
   // Ranking con medallas
   const getMedal = (i) =>
@@ -280,6 +288,21 @@ const Home = () => {
               </a>
             ))}
           </div>
+        </div>
+      </Section>
+
+      {/* TRENDING TOPICS */}
+      <Section className="max-w-6xl mx-auto mt-2 mb-6">
+        <div className="flex items-center mb-2">
+          <h3 className={`text-lg font-bold ${dark ? "text-white" : "text-violet-700"}`}>Tendencias</h3>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          {trending.map((t, i) => (
+            <span key={i} className="bg-violet-100 text-violet-800 px-3 py-1 rounded-xl text-sm">
+              #{t.tag}
+              <span className="ml-1 text-gray-500">{t.count}</span>
+            </span>
+          ))}
         </div>
       </Section>
 

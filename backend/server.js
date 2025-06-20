@@ -13,6 +13,8 @@ const projectRoutes = require('./routes/projectRoutes');
 const rankingRoutes = require('./routes/rankingRoutes');
 const retoRoutes = require('./routes/retoRoutes');
 const actividadRoutes = require('./routes/actividadRoutes');
+const trendingRoutes = require('./routes/trendingRoutes');
+const suggestedRoutes = require('./routes/suggestedRoutes');
 // const commentRoutes = require('./routes/commentRoutes'); // Descomenta si tienes esta ruta
 
 const app = express();
@@ -42,6 +44,8 @@ app.use('/api/projects', projectRoutes);
 app.use('/api/ranking', rankingRoutes);
 app.use('/api/retos', retoRoutes);
 app.use('/api/actividad', actividadRoutes);
+app.use('/api/trending', trendingRoutes);
+app.use('/api/suggested', suggestedRoutes);
 // app.use('/api/comment', commentRoutes); // Descomenta si tienes esta ruta
 
 // Ruta de salud para pruebas rápidas
