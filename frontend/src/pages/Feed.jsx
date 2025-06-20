@@ -167,7 +167,7 @@ const Feed = () => {
     };
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
-  });
+  }, []);
 
   const loadMoreFeed = async () => {
     setIsFetchingMore(true);
