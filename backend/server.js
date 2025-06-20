@@ -14,6 +14,9 @@ const rankingRoutes = require('./routes/rankingRoutes');
 const retoRoutes = require('./routes/retoRoutes');
 const actividadRoutes = require('./routes/actividadRoutes');
 const commentRoutes = require('./routes/commentRoutes');
+const trendsRoutes = require('./routes/trendsRoutes');
+const suggestionsRoutes = require('./routes/suggestionsRoutes');
+const versionRoutes = require('./routes/versionRoutes');
 
 const app = express();
 
@@ -43,6 +46,9 @@ app.use('/api/ranking', rankingRoutes);
 app.use('/api/retos', retoRoutes);
 app.use('/api/actividad', actividadRoutes);
 app.use('/api/comment', commentRoutes);
+app.use('/api/trends', trendsRoutes);
+app.use('/api/suggestions', suggestionsRoutes);
+app.use('/api/version', versionRoutes);
 
 // Ruta de salud para pruebas rápidas
 app.get('/api/health', (req, res) => {

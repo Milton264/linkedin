@@ -1,18 +1,21 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
+import axios from "axios";
 
 const DEFAULT_AVATAR = "https://ui-avatars.com/api/?name=Sin+Foto&background=random";
 
-const suggestions = [
-  { name: "Ana Gómez" },
-  { name: "Luis Pérez" },
-  { name: "María Sánchez" },
-];
+const ENDPOINT = "http://localhost:8081/api";
 
 const PeopleCard = ({ dark }) => {
+  const [suggestions, setSuggestions] = useState([]);
+
+  useEffect(() => {
+    axios.get(`${ENDPOINT}/suggestions`).then((res) => setSuggestions(res.data));
+  }, []);
+
   return (
     <motion.div
-      className={`p-4 rounded-2xl shadow-md ${dark ? "bg-[#231a37]" : "bg-white"}`}
+      className={`p-4 rounded-2xl shadow-md ${dark ? "bg-gradient-to-br from-[#31254b] to-[#1f1933]" : "bg-gradient-to-br from-white to-violet-50"}`}
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
     >
