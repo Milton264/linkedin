@@ -25,8 +25,18 @@ async function addFeed({ username, avatar, mensaje, tiempo }) {
   return result.insertId;
 }
 
+async function updateFeed(id, mensaje) {
+  await pool.query('UPDATE feeds SET mensaje = ? WHERE id = ?', [mensaje, id]);
+}
+
+async function deleteFeed(id) {
+  await pool.query('DELETE FROM feeds WHERE id = ?', [id]);
+}
+
 module.exports = {
   getFeedsPaginated,
   getAllFeeds,
   addFeed,
+  updateFeed,
+  deleteFeed,
 };
