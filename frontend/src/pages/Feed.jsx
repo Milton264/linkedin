@@ -1,10 +1,13 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import axios from "axios";
 import { AnimatePresence, motion } from "framer-motion";
 import Loader from "../components/Loader";
 import TopicsCarousel from "../components/TopicsCarousel";
-import PeopleCard from "../components/PeopleCard";
-import TrendingSideCard from "../components/TrendingSideCard";
+import Composer from "../components/Composer";
+import PostCard from "../components/PostCard";
+import Notification from "../components/Notification";
+import SideBar from "../components/SideBar";
+import useInfiniteScroll from "../hooks/useInfiniteScroll";
 
 const ENDPOINT = "http://localhost:8081/api";
 const DEFAULT_AVATAR = "https://ui-avatars.com/api/?name=Sin+Foto&background=random";
@@ -126,16 +129,13 @@ const Feed = () => {
   const [estado, setEstado] = useState("📝");
   const [publicando, setPublicando] = useState(false);
   const [imagen, setImagen] = useState(null);
-  const [previewImg, setPreviewImg] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
   const [notify, setNotify] = useState("");
-  const inputRef = useRef(null);
 
   // Scroll
   const feedRef = useRef(null);
 
   // --- Modal y paneles ---
-  const [openComments, setOpenComments] = useState(null);
   const [editId, setEditId] = useState(null);
   const [editMensaje, setEditMensaje] = useState("");
 
@@ -156,31 +156,18 @@ const Feed = () => {
       .finally(() => setLoading(false));
   }, []);
 
-  // Scroll infinito
-  useEffect(() => {
-    const handleScroll = () => {
-      if (
-        window.innerHeight + document.documentElement.scrollTop
-        >= document.documentElement.offsetHeight - 350 &&
-        hasMore &&
-        !isFetchingMore
-      ) {
-        loadMoreFeed();
-      }
-    };
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-
-  const loadMoreFeed = async () => {
+  const loadMoreFeed = useCallback(async () => {
     setIsFetchingMore(true);
     const nextPage = page + 1;
     const data = await fetchFeed(nextPage);
-    setFeed(prev => [...prev, ...(Array.isArray(data) ? data : data.posts || [])]);
+    setFeed((prev) => [...prev, ...(Array.isArray(data) ? data : data.posts || [])]);
     setPage(nextPage);
     setHasMore((Array.isArray(data) ? data : data.posts || []).length >= 10);
     setIsFetchingMore(false);
-  };
+  }, [page]);
+
+  useInfiniteScroll({ loadMore: loadMoreFeed, hasMore });
+
 
   // Notificaciones
   const showNotify = (msg, ok = true) => {
@@ -192,7 +179,6 @@ const Feed = () => {
   const handlePublicar = async () => {
     if (!mensaje.trim()) {
       setErrorMsg("No puedes publicar vacío.");
-      inputRef.current.focus();
       return;
     }
     setPublicando(true);
@@ -201,7 +187,6 @@ const Feed = () => {
       await postFeed(mensaje, usuario, imagen, estado);
       setMensaje("");
       setImagen(null);
-      setPreviewImg("");
       showNotify("¡Publicado!");
       setPage(1);
       const data = await fetchFeed(1);
@@ -250,26 +235,23 @@ const Feed = () => {
 
   // ---- UI ----
   return (
-    <div className={dark ? "bg-[#181a24] min-h-screen" : "bg-[#f3f4fb] min-h-screen"}>
+    <div
+      className={
+        dark
+          ? "bg-gradient-to-b from-[#1e1f29] via-[#181a24] to-[#13151e] min-h-screen"
+          : "bg-gradient-to-b from-[#fafbff] via-[#f3f4fb] to-[#e8e9ff] min-h-screen"
+      }
+    >
 
       {/* NOTIFICACIÓN */}
-      <AnimatePresence>
-        {notify && (
-          <motion.div
-            className={`fixed top-3 left-1/2 z-[80] -translate-x-1/2 px-8 py-3 rounded-2xl shadow-lg text-base font-bold ${
-              notify.ok ? "bg-green-500 text-white" : "bg-red-500 text-white"
-            }`}
-            initial={{ opacity: 0, y: -32 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -32 }}
-          >
-            {notify.msg}
-          </motion.div>
-        )}
-      </AnimatePresence>
+      <Notification notify={notify} />
 
       {/* HEADER */}
-      <header className={`sticky top-0 z-50 w-full py-5 px-4 flex items-center gap-4 bg-gradient-to-r ${dark ? "from-violet-800 via-violet-700 to-violet-500" : "from-violet-100 via-white to-violet-50"} shadow`}>
+      <motion.header
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className={`sticky top-0 z-50 w-full py-5 px-4 flex items-center gap-4 bg-gradient-to-r ${dark ? "from-violet-800 via-violet-700 to-violet-500" : "from-violet-100 via-white to-violet-50"} shadow`}
+      >
         <h1 className={`font-bold text-2xl flex-1 ${dark ? "text-white" : "text-violet-700"}`}>📰 Feed comunidad</h1>
         <div className="flex items-center gap-3">
           <button
@@ -310,7 +292,7 @@ const Feed = () => {
             Salir
           </button>
         </div>
-      </header>
+      </motion.header>
 
       {/* TOPICS */}
       <TopicsCarousel dark={dark} />
@@ -333,68 +315,18 @@ const Feed = () => {
       </section>
 
       {/* COMPOSER */}
-      <section className="max-w-xl mx-auto mt-8 mb-3 p-4 bg-white/90 rounded-2xl shadow-md flex items-start gap-3 relative">
-        <img
-          src={usuario.avatar ? `http://localhost:8081${usuario.avatar}` : DEFAULT_AVATAR}
-          className="w-12 h-12 rounded-full border-2 border-violet-200 object-cover"
-          alt="avatar"
-        />
-        <div className="flex-1">
-          <div className="flex gap-2 items-center mb-2">
-            <select className="px-2 py-1 rounded-xl bg-violet-50 text-violet-700 font-semibold text-xs" value={estado} onChange={e => setEstado(e.target.value)}>
-              <option value="📝">📝 Post</option>
-              <option value="🎨">🎨 Diseño</option>
-              <option value="❓">❓ Pregunta</option>
-              <option value="🔥">🔥 Logro</option>
-            </select>
-            <span className="ml-auto text-xs text-gray-400">{mensaje.length}/350</span>
-          </div>
-          <textarea
-            ref={inputRef}
-            value={mensaje}
-            onChange={e => setMensaje(e.target.value)}
-            placeholder="¿Qué quieres compartir hoy?"
-            className={`w-full px-4 py-2 rounded-xl border outline-none transition shadow-md ${dark ? "bg-[#24243c] text-white border-violet-700" : "bg-white border-violet-200"} focus:ring-2 focus:ring-violet-300 resize-none`}
-            rows={2}
-            maxLength={350}
-            disabled={publicando}
-          />
-          {previewImg && (
-            <div className="flex items-center mt-2">
-              <img src={previewImg} className="max-h-32 rounded-xl border border-violet-200 shadow" alt="preview" />
-              <button className="ml-2 text-red-500 font-bold" onClick={() => { setPreviewImg(""); setImagen(null); }}>✕</button>
-            </div>
-          )}
-          <div className="flex items-center gap-2 mt-2">
-            <label className="text-xs text-violet-700 cursor-pointer">
-              <input
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={e => {
-                  setImagen(e.target.files[0]);
-                  const file = e.target.files[0];
-                  if (file) {
-                    const reader = new FileReader();
-                    reader.onload = e2 => setPreviewImg(e2.target.result);
-                    reader.readAsDataURL(file);
-                  }
-                }}
-                disabled={publicando}
-              />
-              📎 Adjuntar imagen
-            </label>
-            <button
-              className="px-4 py-1 bg-violet-500 text-white rounded-xl font-semibold shadow hover:bg-violet-700 transition"
-              disabled={publicando}
-              onClick={handlePublicar}
-            >
-              {publicando ? "Publicando..." : "Publicar"}
-            </button>
-            {errorMsg && <span className="text-red-500 text-xs">{errorMsg}</span>}
-          </div>
-        </div>
-      </section>
+      <Composer
+        usuario={usuario}
+        dark={dark}
+        estado={estado}
+        setEstado={setEstado}
+        mensaje={mensaje}
+        setMensaje={setMensaje}
+        publicar={handlePublicar}
+        publicando={publicando}
+        imagen={imagen}
+        setImagen={setImagen}
+      />
 
       {/* FEED */}
       <section ref={feedRef} className="max-w-2xl mx-auto">
@@ -410,24 +342,18 @@ const Feed = () => {
             </motion.div>
           )}
           {filteredFeed.map((item, i) => (
-            <FeedItem
+            <PostCard
               key={item.id || i}
               item={item}
-              dark={dark}
               usuario={usuario}
-              onComment={() => setOpenComments(item.id)}
-              onNotify={showNotify}
-              onEdit={() => startEdit(item)}
-              onDelete={() => handleDelete(item.id)}
-              isEditing={editId === item.id}
-              editMensaje={editMensaje}
-              setEditMensaje={setEditMensaje}
-              handleEditSave={handleEditSave}
-              onFav={() => favPost(item.id)}
-              onRefresh={async () => {
-                const data = await fetchFeed(1);
-                setFeed(Array.isArray(data) ? data : data.posts || []);
-              }}
+              dark={dark}
+              onEdit={startEdit}
+              onDelete={handleDelete}
+              onLike={likePost}
+              onFav={favPost}
+              fetchComments={fetchComments}
+              postComment={postComment}
+              fetchLikes={fetchLikes}
             />
           ))}
         </AnimatePresence>
@@ -442,23 +368,10 @@ const Feed = () => {
       </section>
         </div>
         <aside className="w-full lg:w-64 flex flex-col gap-4 mt-6 lg:mt-0">
-          <PeopleCard dark={dark} />
-          <TrendingSideCard dark={dark} />
+          <SideBar dark={dark} />
         </aside>
       </div>
 
-      {/* MODAL DE COMENTARIOS */}
-      <AnimatePresence>
-        {openComments && (
-          <CommentModal
-            feedId={openComments}
-            onClose={() => setOpenComments(null)}
-            usuario={usuario}
-            dark={dark}
-            onNotify={showNotify}
-          />
-        )}
-      </AnimatePresence>
 
       {/* Barra de navegación inferior */}
       <nav className={`fixed bottom-0 left-0 w-full z-40 shadow-lg ${dark ? "bg-[#23243a] border-t border-violet-900" : "bg-white"}`}>
@@ -543,6 +456,7 @@ function FeedItem({
       initial={{ opacity: 0, scale: 0.97, y: 16 }}
       animate={{ opacity: 1, scale: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.97, y: 16 }}
+      whileHover={{ scale: 1.02, y: -2 }}
       transition={{ duration: 0.17 }}
       className={`bg-white/90 rounded-2xl shadow-md p-4 flex gap-4 items-start mb-5 border border-violet-50 relative hover:shadow-lg transition`}
       onMouseLeave={() => setShowProfile(false)}
@@ -657,6 +571,7 @@ function FeedItem({
   );
 }
 
+
 function CommentModal({ feedId, onClose, usuario, dark, onNotify }) {
   const [comments, setComments] = useState([]);
   const [cargando, setCargando] = useState(true);
@@ -750,5 +665,4 @@ function CommentModal({ feedId, onClose, usuario, dark, onNotify }) {
     </motion.div>
   );
 }
-
 export default Feed;
