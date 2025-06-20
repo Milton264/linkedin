@@ -6,6 +6,9 @@ const ENDPOINT = "http://localhost:8081/api";
 const TrendingSideCard = ({ dark }) => {
   const [trends, setTrends] = useState([]);
 
+  const formatNumber = (n) =>
+    n.toLocaleString('es-ES', { minimumFractionDigits: 0 });
+
   useEffect(() => {
     axios.get(`${ENDPOINT}/trends`).then((res) => setTrends(res.data));
   }, []);
@@ -19,7 +22,13 @@ const TrendingSideCard = ({ dark }) => {
       <h3 className={`font-bold mb-3 ${dark ? "text-white" : "text-violet-700"}`}>Tendencias</h3>
       <ul className="flex flex-col gap-2">
         {trends.map((t, i) => (
-          <li key={i} className={`text-sm ${dark ? "text-violet-100" : "text-violet-700"}`}>{t}</li>
+          <li
+            key={i}
+            className={`text-sm flex justify-between ${dark ? "text-violet-100" : "text-violet-700"}`}
+          >
+            <span>{t}</span>
+            <span className="opacity-70 text-xs">{formatNumber(Math.floor(Math.random() * 9000 + 1000))}</span>
+          </li>
         ))}
       </ul>
     </motion.div>
