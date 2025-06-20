@@ -2,6 +2,9 @@ import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import { AnimatePresence, motion } from "framer-motion";
 import Loader from "../components/Loader";
+import TopicsCarousel from "../components/TopicsCarousel";
+import PeopleCard from "../components/PeopleCard";
+import TrendingSideCard from "../components/TrendingSideCard";
 
 const ENDPOINT = "http://localhost:8081/api";
 const DEFAULT_AVATAR = "https://ui-avatars.com/api/?name=Sin+Foto&background=random";
@@ -267,8 +270,8 @@ const Feed = () => {
 
       {/* HEADER */}
       <header className={`sticky top-0 z-50 w-full py-5 px-4 flex items-center gap-4 bg-gradient-to-r ${dark ? "from-violet-800 via-violet-700 to-violet-500" : "from-violet-100 via-white to-violet-50"} shadow`}>
-        <h1 className={`font-bold text-2xl ${dark ? "text-white" : "text-violet-700"}`}>📰 Feed comunidad</h1>
-        <div className="flex gap-2 ml-auto">
+        <h1 className={`font-bold text-2xl flex-1 ${dark ? "text-white" : "text-violet-700"}`}>📰 Feed comunidad</h1>
+        <div className="flex items-center gap-3">
           <button
             onClick={() => setDark((d) => !d)}
             className={`w-9 h-9 rounded-full flex items-center justify-center ${dark ? "bg-white" : "bg-violet-200"} transition-all shadow hover:scale-110`}
@@ -285,8 +288,20 @@ const Feed = () => {
               </svg>
             )}
           </button>
+          <motion.button
+            whileTap={{ scale: 0.9 }}
+            className={`w-9 h-9 rounded-full flex items-center justify-center ${dark ? "bg-violet-600 text-white" : "bg-violet-200 text-violet-700"} transition-all shadow hover:scale-110`}
+            title="Notificaciones"
+          >
+            🔔
+          </motion.button>
+          <img
+            src={usuario.avatar ? `http://localhost:8081${usuario.avatar}` : DEFAULT_AVATAR}
+            className="w-9 h-9 rounded-full border-2 border-white object-cover"
+            alt="avatar"
+          />
           <button
-            className="ml-1 text-red-500 hover:underline font-semibold"
+            className="ml-2 text-red-500 hover:underline font-semibold"
             onClick={() => {
               localStorage.clear();
               window.location.href = "/login";
@@ -296,6 +311,12 @@ const Feed = () => {
           </button>
         </div>
       </header>
+
+      {/* TOPICS */}
+      <TopicsCarousel dark={dark} />
+
+      <div className="max-w-5xl mx-auto flex flex-col lg:flex-row gap-6 px-2">
+        <div className="flex-1">
 
       {/* FILTROS */}
       <section className="max-w-2xl mx-auto mt-4 flex gap-2 justify-center items-center">
@@ -419,6 +440,12 @@ const Feed = () => {
           <div className="text-center text-gray-400 text-xs py-5">No hay más publicaciones.</div>
         )}
       </section>
+        </div>
+        <aside className="w-full lg:w-64 flex flex-col gap-4 mt-6 lg:mt-0">
+          <PeopleCard dark={dark} />
+          <TrendingSideCard dark={dark} />
+        </aside>
+      </div>
 
       {/* MODAL DE COMENTARIOS */}
       <AnimatePresence>
