@@ -1,0 +1,20 @@
+// models/Actividad.js
+const pool = require('../config/db');
+
+async function getAllActividades() {
+  const [rows] = await pool.query('SELECT * FROM actividades ORDER BY tiempo DESC');
+  return rows;
+}
+
+async function addActividad({ username, avatar, actividad, tiempo }) {
+  const [result] = await pool.query(
+    'INSERT INTO actividades (username, avatar, actividad, tiempo) VALUES (?, ?, ?, ?)',
+    [username, avatar, actividad, tiempo]
+  );
+  return result.insertId;
+}
+
+module.exports = {
+  getAllActividades,
+  addActividad,
+};
