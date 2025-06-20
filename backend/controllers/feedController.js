@@ -1,4 +1,5 @@
 const Feed = require('../models/Feed');
+const { randomUUID } = require('crypto');
 
 // GET /api/feed?page=1&perPage=10
 exports.getFeed = async (req, res) => {
@@ -6,11 +7,15 @@ exports.getFeed = async (req, res) => {
     let page = parseInt(req.query.page) || 1;
     let perPage = parseInt(req.query.perPage) || 10;
     const { rows, total } = await Feed.getFeedsPaginated(page, perPage);
+    const posts = rows.map((row) => ({
+      id: row.id || row.ID || randomUUID(),
+      ...row,
+    }));
     res.json({
       total,
       page,
       perPage,
-      posts: rows,
+      posts,
     });
   } catch (err) {
     console.error("ERROR EN GET FEED:", err);

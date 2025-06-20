@@ -388,9 +388,9 @@ const Feed = () => {
               No hay publicaciones aún. ¡Sé el primero en compartir algo!
             </motion.div>
           )}
-          {filteredFeed.map((item, i) => (
+          {filteredFeed.map((item) => (
             <FeedItem
-              key={item.id || i}
+              key={item.id}
               item={item}
               dark={dark}
               usuario={usuario}
